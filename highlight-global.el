@@ -1,4 +1,9 @@
-;;; highlight-global.el --- package for highlighting multi symbols accross ALL buffer.
+;;; highlight-global.el --- package for highlighting multi symbols accross ALL buffers
+;;;
+;;; Copyright 2013-2014 Glen Dai
+;;; Author: Glen Dai <gafglen@gmail.com>
+;;; URL: https://github.com/glen-dai/highlight-global
+;;; Version: 0.01
 ;;;
 ;;; When reading source code with EMACS, couples of related files will
 ;;; be opened simultaneously. A function/variable defined in one file
@@ -142,12 +147,12 @@ symbol under cursor"
   "Check if HI is already highlighted by checking
 global-highlight-list"
   (let ((the-found-one nil))
-  (progn
-    (dolist (item global-highlight-list)
-      (when (equal hi (car item))
-        (progn
-          (setq the-found-one item))))
-    the-found-one)))
+    (progn
+      (dolist (item global-highlight-list)
+        (when (equal hi (car item))
+          (progn
+            (setq the-found-one item))))
+      the-found-one)))
 
 (defun highlight-frame-toggle ()
   (interactive)
@@ -157,21 +162,21 @@ global-highlight-list"
     (if (stringp thing-to-highlight)
         (progn
           (setq hi (check-whether-highlighted thing-to-highlight))
-        ;; toogle highlight, 2 cases
-        ;; 1) thing already unlighlight and stored in list, unhighight it
-        ;; 2) new highlight, highlight it and add it to list
+          ;; toogle highlight, 2 cases
+          ;; 1) thing already unlighlight and stored in list, unhighight it
+          ;; 2) new highlight, highlight it and add it to list
           (if hi
-            ;; 1) toogle off
-            ;;    1. delete item from global-list && update timestamp
-            ;;    2. set new-unhighlight and unhighight each window
-            (progn
-              (setq new-unhighlight hi)
-              (release-face (cdr new-unhighlight))
-              (setq global-highlight-list
-                    (delete new-unhighlight global-highlight-list))
-              (setq global-highlight-list-update-timestamp (float-time))
-              (walk-windows 'unhighlight-window))
-          ;; 2) new highlight
+              ;; 1) toogle off
+              ;;    1. delete item from global-list && update timestamp
+              ;;    2. set new-unhighlight and unhighight each window
+              (progn
+                (setq new-unhighlight hi)
+                (release-face (cdr new-unhighlight))
+                (setq global-highlight-list
+                      (delete new-unhighlight global-highlight-list))
+                (setq global-highlight-list-update-timestamp (float-time))
+                (walk-windows 'unhighlight-window))
+            ;; 2) new highlight
             (progn
               (setq new-highlight (cons thing-to-highlight (find-and-use-face)))
               (setq global-highlight-list (cons new-highlight global-highlight-list))
@@ -228,8 +233,8 @@ highlight"
   (interactive)
   (save-excursion
     (walk-windows #'(lambda (win)
-                    (select-window win)
-                    (highlight-update-current-buffer)))))
+                      (select-window win)
+                      (highlight-update-current-buffer)))))
 
 ;; Automatically update new buffer's highlights when any windows on
 ;; current frame changed. This will make buffers that to be showned
@@ -244,3 +249,5 @@ highlight"
   (add-to-list 'window-size-change-functions 'update-highlight-fixup))
 
 (provide 'highlight-global)
+
+;;; highlight-global.el ends here
