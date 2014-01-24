@@ -27,10 +27,10 @@
 ;;; to highlight-faces.
 
 ;; toggle highlight of current region(all symbol under cursor if region is not active)
-;; (global-set-key (kbd "M-\"") 'highlight-frame-toggle)
+;; (global-set-key (kbd "M-H") 'highlight-frame-toggle)
 
 ;; clear all highlight of current frame
-;; (global-set-key (kbd "M-+") 'clear-highlight-frame)
+;; (global-set-key (kbd "M-C") 'clear-highlight-frame)
 
 (require 'hi-lock)
 (setq hi-lock-file-patterns-policy 'never)
