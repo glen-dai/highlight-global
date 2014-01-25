@@ -2,6 +2,7 @@
 
 ;; Copyright 2013-2014 Glen Dai
 ;; Author: Glen Dai <gafglen@gmail.com>
+;; Keywords: highlight
 ;; URL: https://github.com/glen-dai/highlight-global
 ;; Version: 0.01
 
@@ -53,7 +54,6 @@
 ;; Clear all highlight of current frame, and bind it like this:
 ;;     (global-set-key (kbd "M-C") 'clear-highlight-frame)
 
-;; Fore more infomation go to https://github.com/glen-dai/highlight-global
 
 (require 'hi-lock)
 (setq hi-lock-file-patterns-policy 'never)
