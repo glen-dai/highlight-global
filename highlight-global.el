@@ -1,37 +1,59 @@
 ;;; highlight-global.el --- package for highlighting multi symbols accross ALL buffers
-;;;
-;;; Copyright 2013-2014 Glen Dai
-;;; Author: Glen Dai <gafglen@gmail.com>
-;;; URL: https://github.com/glen-dai/highlight-global
-;;; Version: 0.01
-;;;
-;;; When reading source code with EMACS, couples of related files will
-;;; be opened simultaneously. A function/variable defined in one file
-;;; will be referenced by another function in another file. A
-;;; highlight of the corresponding function/vairalbe accross these
-;;; buffers will make code reading much more friendly.
-;;;
-;;; EMACS support multi highlight symbols in one buffer but not
-;;; accross multi buffers. This package provide highlighting of
-;;; symbols accross all buffer.
-;;;
-;;; When new highlight is being added, only the windows of current
-;;; frame are updated. Whenever frame configration change(say new
-;;; window is added to current frame), window's highlight will be
-;;; updated to make windows currently showing always has the updated
-;;; highlights. This way is much more effecient than iterating the
-;;; overall buffer-list to update highlights for every buffer.
-;;;
-;;; Multi symbols can be highlighted simultaneously. Different
-;;; highlights have different face. You could add your highlight face
-;;; to highlight-faces.
 
-;;; Toggle highlight of current region (or symbol under cursor if
-;;; region is not active)
-;;; (global-set-key (kbd "M-H") 'highlight-frame-toggle)
+;; Copyright 2013-2014 Glen Dai
+;; Author: Glen Dai <gafglen@gmail.com>
+;; URL: https://github.com/glen-dai/highlight-global
+;; Version: 0.01
 
-;;; Clear all highlight of current frame
-;;; (global-set-key (kbd "M-C") 'clear-highlight-frame)
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; When reading source code with EMACS, couples of related files will
+;; be opened simultaneously. A function/variable defined in one file
+;; will be referenced by another function in another file. A
+;; highlight of the corresponding function/vairalbe accross these
+;; buffers will make code reading much more friendly.
+
+;; EMACS support multi highlight symbols in one buffer but not
+;; accross multi buffers. This package provide highlighting of
+;; symbols accross all buffer.
+
+;; When new highlight is being added, only the windows of current
+;; frame are updated. Whenever frame configration change(say new
+;; window is added to current frame), window's highlight will be
+;; updated to make windows currently showing always has the updated
+;; highlights. This way is much more effecient than iterating the
+;; overall buffer-list to update highlights for every buffer.
+;;
+;; Multi symbols can be highlighted simultaneously. Different
+;; highlights have different face. You could add your highlight face
+;; to highlight-faces.
+
+;;; How to use?
+
+;; Put the package into load-path, and load the packaget
+;;     (require 'highlight-global)
+
+;; Toggle highlight of current region (or symbol under cursor if
+;; region is not active) and bind it like this:
+;;     (global-set-key (kbd "M-H") 'highlight-frame-toggle)
+
+;; Clear all highlight of current frame, and bind it like this:
+;;     (global-set-key (kbd "M-C") 'clear-highlight-frame)
+
+;; Fore more infomation go to https://github.com/glen-dai/highlight-global
 
 (require 'hi-lock)
 (setq hi-lock-file-patterns-policy 'never)
