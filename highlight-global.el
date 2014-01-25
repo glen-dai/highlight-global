@@ -7,9 +7,9 @@
 ;;;
 ;;; When reading source code with EMACS, couples of related files will
 ;;; be opened simultaneously. A function/variable defined in one file
-;;; will referenced by another function in another file. A highlight
-;;; of the corresponding function/vairalbe accross these buffers will
-;;; make code reading much more friendly.
+;;; will be referenced by another function in another file. A
+;;; highlight of the corresponding function/vairalbe accross these
+;;; buffers will make code reading much more friendly.
 ;;;
 ;;; EMACS support multi highlight symbols in one buffer but not
 ;;; accross multi buffers. This package provide highlighting of
