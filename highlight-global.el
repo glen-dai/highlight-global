@@ -26,11 +26,12 @@
 ;;; highlights have different face. You could add your highlight face
 ;;; to highlight-faces.
 
-;; toggle highlight of current region(all symbol under cursor if region is not active)
-;; (global-set-key (kbd "M-H") 'highlight-frame-toggle)
+;;; Toggle highlight of current region (or symbol under cursor if
+;;; region is not active)
+;;; (global-set-key (kbd "M-H") 'highlight-frame-toggle)
 
-;; clear all highlight of current frame
-;; (global-set-key (kbd "M-C") 'clear-highlight-frame)
+;;; Clear all highlight of current frame
+;;; (global-set-key (kbd "M-C") 'clear-highlight-frame)
 
 (require 'hi-lock)
 (setq hi-lock-file-patterns-policy 'never)
