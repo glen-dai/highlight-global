@@ -64,6 +64,12 @@
     ('hi-blue   . 0))
   "Default faces for hi-lock interactive functions, you could add your own.")
 
+(defvar highlight-global-blacklist-buffers
+  '("*Colors*" ; M-x list-colors-display
+    "*LV*" ; hydra package
+    "*which-key*") ; which-key package
+  "List of buffers in which the highlight should not be updated.")
+
 ;; List to store what had been highlighted
 (defvar highlight-global-hl-list nil
   "Global highlight list, always store the updated highlight
@@ -211,14 +217,31 @@ If active region, get region, else get symbol under cursor."
         ;; (message "no need to update : %s" (current-buffer))
         )))
 
+(defun highlight-global-force-hl-frame ()
+  "Force to update highlights in every window in the current frame."
+  (save-excursion
+    (walk-windows (lambda (win)
+                    (select-window win)
+                    (let ((buf-name-chomp
+                           ;; This chomp is required because packages like
+                           ;; `which-key' name their special buffer with
+                           ;; preceding white space like " *which-key*".
+                           (replace-regexp-in-string
+                            "\\(^[[:space:]\n]*\\|[[:space:]\n]*$\\)" ""
+                            (buffer-name))))
+                      ;; (message "Window: %s Buffer: %s" win buf-name-chomp)
+                      (when (not (member buf-name-chomp
+                                         highlight-global-blacklist-buffers))
+                        (highlight-global-update-current-buffer-hl)))))))
+
 (defun highlight-global-update-hl-fixup (frame)
   "Automatically update new buffer's highlights when any windows on current
 frame changed. This will make buffers that to be showned because of window
-splitting alway has highlights updated to date."
+splitting always has highlights updated to date."
   (highlight-global-force-hl-frame))
 
-;; register the on-the-fly highlight-list updating strategy to
-;; window-size-change-functions hook
+;; Register the on-the-fly highlight-list updating strategy to
+;; `window-size-change-functions' hook.
 (if (null window-size-change-functions)
     (setq window-size-change-functions '(highlight-global-update-hl-fixup))
   (add-to-list 'window-size-change-functions 'highlight-global-update-hl-fixup))
@@ -264,14 +287,6 @@ splitting alway has highlights updated to date."
   (setq highlight-global-hl-list nil)
   (highlight-global--clear-all-faces)
   (setq highlight-global-hl-list-update-timestamp (float-time)))
-
-(defun highlight-global-force-hl-frame ()
-  "Force to update highlights in every window in the current frame."
-  (interactive)
-  (save-excursion
-    (walk-windows #'(lambda (win)
-                      (select-window win)
-                      (highlight-global-update-current-buffer-hl)))))
 
 
 (provide 'highlight-global)
