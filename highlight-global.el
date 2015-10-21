@@ -1,4 +1,4 @@
-;;; highlight-global.el --- package for highlighting multi symbols accross ALL buffers
+;;; highlight-global.el --- package for highlighting multi symbols across ALL buffers
 
 ;; Copyright 2013-2014 Glen Dai
 ;; Author: Glen Dai <gafglen@gmail.com>
@@ -21,38 +21,39 @@
 
 ;;; Commentary:
 
-;; When reading source code with EMACS, couples of related files will
+;; When reading source code with EMACS, couple of related files will
 ;; be opened simultaneously. A function/variable defined in one file
 ;; will be referenced by another function in another file. A
 ;; highlight of the corresponding function/variable across these
 ;; buffers will make code reading much more friendly.
 
-;; EMACS support multi highlight symbols in one buffer but not
-;; accross multi buffers. This package provide highlighting of
-;; symbols accross all buffer.
+;; EMACS support multiple highlight symbols in one buffer but not
+;; across multiple buffers. This package provide highlighting of
+;; symbols across all buffers.
 
-;; When new highlight is being added, only the windows of current
-;; frame are updated. Whenever frame configration change(say new
-;; window is added to current frame), window's highlight will be
-;; updated to make windows currently showing always has the updated
-;; highlights. This way is much more effecient than iterating the
-;; overall buffer-list to update highlights for every buffer.
+;; When a new highlight is added, only the windows of the current
+;; frame are updated. Whenever frame configuration changes (say a new
+;; window is added to the current frame), the highlights will be
+;; updated to make the windows always show the updated highlights.
+;; This way, it is much more efficient than iterating through the
+;; whole buffer list to update highlights for every buffer (even the ones which
+;; are not visible).
 ;;
-;; Multi symbols can be highlighted simultaneously. Different
+;; Multiple symbols can be highlighted simultaneously. Different
 ;; highlights have different face. You could add your highlight face
 ;; to `highlight-global-hl-faces'.
 
 ;;; How to use?
 
-;; Put the package into load-path, and load the packaget
+;; Put the package in `load-path', and load the package:
 ;;     (require 'highlight-global)
 
 ;; Toggle highlight of current region (or symbol under cursor if
 ;; region is not active) and bind it like this:
-;;     (global-set-key (kbd "M-H") 'highlight-global-hl-frame-toggle)
+;;     (global-set-key (kbd "M-H") #'highlight-global-hl-frame-toggle)
 
-;; Clear all highlight of current frame, and bind it like this:
-;;     (global-set-key (kbd "M-C") 'highlight-global-clear-hl-frame)
+;; Clear all highlights from the current frame, and bind it like this:
+;;     (global-set-key (kbd "M-C") #'highlight-global-clear-hl-frame)
 
 
 (require 'hi-lock)
