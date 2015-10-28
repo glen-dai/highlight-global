@@ -65,11 +65,14 @@
     ('hi-blue   . 0))
   "Default faces for hi-lock interactive functions, you could add your own.")
 
-(defvar highlight-global-blacklist-buffers
-  '("*Colors*" ; M-x list-colors-display
-    "*LV*" ; hydra package
-    "*which-key*") ; which-key package
-  "List of buffers in which the highlight should not be updated.")
+(defvar highlight-global-blacklist-buffers-regexp
+  (concat "\\("
+          "\\*Colors\\*" ; M-x list-colors-display
+          "\\|\\*LV\\*" ; hydra package
+          "\\|\\*which\\-key\\*" ; which-key package
+          "\\|\\*Minibuf\\-[0-9]+\\*" ; Recursive minibuffers
+          "\\)")
+  "Regexp of buffer names in which the highlight should not be updated.")
 
 ;; List to store what had been highlighted
 (defvar highlight-global-hl-list nil
@@ -231,8 +234,10 @@ If active region, get region, else get symbol under cursor."
                             "\\(^[[:space:]\n]*\\|[[:space:]\n]*$\\)" ""
                             (buffer-name))))
                       ;; (message "Window: %s Buffer: %s" win buf-name-chomp)
-                      (when (not (member buf-name-chomp
-                                         highlight-global-blacklist-buffers))
+                      (when (not
+                             (string-match-p highlight-global-blacklist-buffers-regexp
+                                             buf-name-chomp))
+                        ;; (message "Updating highlights in buffer: %s" buf-name-chomp)
                         (highlight-global-update-current-buffer-hl)))))))
 
 (defun highlight-global-update-hl-fixup (frame)
