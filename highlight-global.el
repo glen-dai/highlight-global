@@ -65,12 +65,13 @@
     ('hi-blue   . 0))
   "Default faces for hi-lock interactive functions, you could add your own.")
 
-(defvar highlight-global-blacklist-buffers-regexp
+(defconst highlight-global-blacklist-buffers-regexp
   (concat "\\("
           "\\*Colors\\*" ; M-x list-colors-display
           "\\|\\*LV\\*" ; hydra package
           "\\|\\*which\\-key\\*" ; which-key package
           "\\|\\*Minibuf\\-[0-9]+\\*" ; Recursive minibuffers
+          "\\|\\*Help\\*" ; Help
           "\\)")
   "Regexp of buffer names in which the highlight should not be updated.")
 
