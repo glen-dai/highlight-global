@@ -67,11 +67,13 @@
 
 (defconst highlight-global-blacklist-buffers-regexp
   (concat "\\("
-          "\\*Colors\\*" ; M-x list-colors-display
-          "\\|\\*LV\\*" ; hydra package
-          "\\|\\*which\\-key\\*" ; which-key package
+          "\\*Colors\\*" ; `list-colors-display'
+          "\\|\\*LV\\*" ; `hydra' package
+          "\\|\\*which\\-key\\*" ; `which-key' package
           "\\|\\*Minibuf\\-[0-9]+\\*" ; Recursive minibuffers
-          "\\|\\*Help\\*" ; Help
+          "\\|\\*Help\\*" ; *Help* buffers
+          "\\|\\*Benchmark\\s-Init" ; `benchmark-init' package
+          "\\|\\*magit" ; `magit' package
           "\\)")
   "Regexp of buffer names in which the highlight should not be updated.")
 
@@ -124,43 +126,62 @@ was updated.")
     (when (equal (car face) face-to-release)
       (setcdr face (- (cdr face) 1)))))
 
+(defun highlight-global-allowed-window-p ()
+  "Predicate function that decides if (un)highlighting should be done in the
+current window."
+  (let* ((buf-name-chomp
+          ;; This chomp is required because packages like `which-key' name
+          ;; their special buffer with preceding white space like " *which-key*".
+          (replace-regexp-in-string
+           "\\(^[[:space:]\n]*\\|[[:space:]\n]*$\\)" "" (buffer-name)))
+         (allow (not (string-match-p highlight-global-blacklist-buffers-regexp
+                                     buf-name-chomp))))
+    ;; (message "Buffer: %s Allowed: %s" buf-name-chomp allow)
+    allow))
+
+(defun highlight-global-hl-window (win)
+  "Global highlighting of windows.
+Should update buffer-local highlight-list and timestamp."
+  (select-window win)
+  (when (highlight-global-allowed-window-p)
+    (setq highlight-global--buffer-highlight-list-update-timestamp (float-time))
+    ;; Add new highlight to current buffer's keyword list
+    (push highlight-global-new-highlight highlight-global--buffer-highlight-list)
+    (font-lock-add-keywords nil
+                            `((,(car highlight-global-new-highlight)
+                               0
+                               ,(cdr highlight-global-new-highlight) prepend))
+                            'append)
+    (font-lock-fontify-buffer)))
+
+(defun highlight-global-unhl-window (win)
+  "Global unhighlighting of windows.
+Should update buffer-local highlight-list and timestamp, used by `walk-windows'."
+  (select-window win)
+  (when (highlight-global-allowed-window-p)
+    (setq highlight-global--buffer-highlight-list-update-timestamp (float-time))
+    (setq highlight-global--buffer-highlight-list
+          (delete highlight-global-new-unhighlight
+                  highlight-global--buffer-highlight-list))
+    (font-lock-remove-keywords nil
+                               `((,(car highlight-global-new-unhighlight)
+                                  0
+                                  ,(cdr highlight-global-new-unhighlight) prepend)))
+    (font-lock-fontify-buffer)))
+
 (defun highlight-global-clear-highlight-window (win)
   "Clear all highlight of current buffer, called by `unhighlit-windows-all'
 when iterating all windows. When a buffer is being buried, this function also
 will be called to clear all highlight."
   (select-window win)
-  (setq highlight-global--buffer-highlight-list-update-timestamp (float-time))
-  (dolist (item highlight-global-hl-list)
-    (font-lock-remove-keywords
-     nil
-     `((,(car item) 0 ,(cdr item) prepend)))
-    (font-lock-fontify-buffer)))
-
-(defun highlight-global-unhl-window (win)
-  "Highligt a buffer, should update of buffer-local
-highlight-list and timestamp, used by `walk-windows'"
-  (select-window win)
-  (setq highlight-global--buffer-highlight-list-update-timestamp (float-time))
-  (setq highlight-global--buffer-highlight-list
-        (delete highlight-global-new-unhighlight
-                highlight-global--buffer-highlight-list))
-  ;; add new highlight to current buffer's keyword list
-  (font-lock-remove-keywords
-   nil
-   `((,(car highlight-global-new-unhighlight)
-      0
-      ,(cdr highlight-global-new-unhighlight) prepend)))
-  (font-lock-fontify-buffer))
-
-(defun highlight-global-hl-window (win)
-  "Highligt a buffer, should update buffer-local highlight-list and timestamp."
-  (select-window win)
-  (setq highlight-global--buffer-highlight-list-update-timestamp (float-time))
-  (push highlight-global-new-highlight highlight-global--buffer-highlight-list)
-  (font-lock-add-keywords
-   nil
-   `((,(car highlight-global-new-highlight) 0 ,(cdr highlight-global-new-highlight) prepend)) 'append)
-  (font-lock-fontify-buffer))
+  (when (highlight-global-allowed-window-p)
+    (setq highlight-global--buffer-highlight-list-update-timestamp (float-time))
+    (dolist (item highlight-global-hl-list)
+      (font-lock-remove-keywords nil
+                                 `((,(car item)
+                                    0
+                                    ,(cdr item) prepend)))
+      (font-lock-fontify-buffer))))
 
 (defun highlight-global-get-thing-to-highlight ()
   "Get thing to highlight.
@@ -227,19 +248,8 @@ If active region, get region, else get symbol under cursor."
   (save-excursion
     (walk-windows (lambda (win)
                     (select-window win)
-                    (let ((buf-name-chomp
-                           ;; This chomp is required because packages like
-                           ;; `which-key' name their special buffer with
-                           ;; preceding white space like " *which-key*".
-                           (replace-regexp-in-string
-                            "\\(^[[:space:]\n]*\\|[[:space:]\n]*$\\)" ""
-                            (buffer-name))))
-                      ;; (message "Window: %s Buffer: %s" win buf-name-chomp)
-                      (when (not
-                             (string-match-p highlight-global-blacklist-buffers-regexp
-                                             buf-name-chomp))
-                        ;; (message "Updating highlights in buffer: %s" buf-name-chomp)
-                        (highlight-global-update-current-buffer-hl)))))))
+                    (when (highlight-global-allowed-window-p)
+                      (highlight-global-update-current-buffer-hl))))))
 
 (defun highlight-global-update-hl-fixup (frame)
   "Automatically update new buffer's highlights when any windows on current
@@ -262,11 +272,11 @@ splitting always has highlights updated to date."
     (if (stringp thing-to-highlight)
         (progn
           (setq hi (highlight-global-check-whether-highlighted thing-to-highlight))
-          ;; toogle highlight, 2 cases
-          ;; 1) thing already unlighlight and stored in list, unhighight it
+          ;; toggle highlight, 2 cases
+          ;; 1) thing already unhighlight and stored in list, unhighight it
           ;; 2) new highlight, highlight it and add it to list
           (if hi
-              ;; 1) toogle off
+              ;; 1) toggle off
               ;;    1. delete item from global-list && update timestamp
               ;;    2. set highlight-global-new-unhighlight and unhighight each window
               (progn
@@ -275,7 +285,7 @@ splitting always has highlights updated to date."
                 (setq highlight-global-hl-list
                       (delete highlight-global-new-unhighlight highlight-global-hl-list))
                 (setq highlight-global-hl-list-update-timestamp (float-time))
-                (walk-windows 'highlight-global-unhl-window))
+                (walk-windows #'highlight-global-unhl-window))
             ;; 2) new highlight
             (progn
               (setq highlight-global-new-highlight
@@ -283,14 +293,14 @@ splitting always has highlights updated to date."
               (setq highlight-global-hl-list
                     (cons highlight-global-new-highlight highlight-global-hl-list))
               (setq highlight-global-hl-list-update-timestamp (float-time))
-              (walk-windows 'highlight-global-hl-window))))
+              (walk-windows #'highlight-global-hl-window))))
       (message "No valid region, or no valid symbol under cursor!"))))
 
 ;;;###autoload
 (defun highlight-global-clear-hl-frame ()
   "Clear all highlights in all windows."
   (interactive)
-  (walk-windows 'highlight-global-clear-highlight-window)
+  (walk-windows #'highlight-global-clear-highlight-window)
   (setq highlight-global-hl-list nil)
   (highlight-global--clear-all-faces)
   (setq highlight-global-hl-list-update-timestamp (float-time)))
